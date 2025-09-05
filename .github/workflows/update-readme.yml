@@ -1,0 +1,39 @@
+name: Update README with Current Month
+
+on:
+  schedule:
+    # Run on the 1st day of every month at 9:00 AM UTC
+    - cron: '0 9 1 * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update README with current month
+        run: |
+          # Get current month and year
+          CURRENT_MONTH_YEAR=$(date '+%B %Y')
+
+          # Update the README.md file
+          sed -i "s/It is .* and no recruiter/It is $CURRENT_MONTH_YEAR and no recruiter/" README.md
+
+          # Check if there are changes
+          if git diff --quiet README.md; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README.md
+          git commit -m "Update README with current month: $(date '+%B %Y')"
+          git push
